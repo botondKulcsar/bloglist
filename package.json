@@ -1,0 +1,34 @@
+{
+  "name": "bloglist",
+  "version": "1.0.0",
+  "description": "list of interesting blogs",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/botondKulcsar/bloglist.git"
+  },
+  "keywords": [
+    "node.js",
+    "backend",
+    "express.js"
+  ],
+  "author": "kecs",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/botondKulcsar/bloglist/issues"
+  },
+  "homepage": "https://github.com/botondKulcsar/bloglist#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.13"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "mongoose": "^6.0.11"
+  }
+}

@@ -43,6 +43,19 @@ describe('blog API', () => {
         expect(response.body.length).toBe(helper.initialBlogs.length + 1)
         expect(response.body.map(blog => blog.title)).toContain('New Title')
     })
+
+    test('if the likes property is missing from the request it will default to 0', async () => {
+        const response = await api
+            .post('/api/blogs')
+            .send({
+                title: 'New Title',
+                url: 'http://www.exampleTestblog.com'
+            })
+            .expect(201)
+            .expect('Content-Type', /application\/json/)
+
+        expect(response.body.likes).toBe(0)
+    })
 })
 
 afterAll(() => {

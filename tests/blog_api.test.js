@@ -56,6 +56,15 @@ describe('blog API', () => {
 
         expect(response.body.likes).toBe(0)
     })
+
+    test('if the title or url property is missing from the request, api responds with status code 400', async () => {
+        await api
+            .post('/api/blogs')
+            .send({
+                url: 'http://www.exampleTestblog.com'
+            })
+            .expect(400)
+    })
 })
 
 afterAll(() => {

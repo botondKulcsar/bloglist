@@ -91,7 +91,7 @@ describe('delete', () => {
     test('returns status code 404 in case of inexistent id', async () => {
         
         const invalidId = await helper.nonExistingId()
-        console.log(invalidId)
+        
         await api
             .delete(`/api/blogs/${invalidId}`)
             .expect(404)
@@ -101,6 +101,35 @@ describe('delete', () => {
 
         expect(result.body.length).toBe(helper.initialBlogs.length)
 
+    })
+})
+
+describe('update', () => {
+    test('works in case of valid id', async () => {
+        const response = await api
+            .get('/api/blogs')
+
+        const validId = response.body[0].id
+
+        const result = await api
+            .patch(`/api/blogs/${validId}`)
+            .send({
+                likes: 99
+            })
+            .expect(200)
+
+        expect(result.body.likes).toBe(99)
+    })
+
+    test('returns status code 404 in case of nonexisting id', async () => {
+        const nonExistingId = await helper.nonExistingId()
+
+        await api
+            .patch(`/api/blogs/${nonExistingId}`)
+            .send({
+                likes: 99
+            })
+            .expect(404)
     })
 })
 

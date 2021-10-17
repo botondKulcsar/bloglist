@@ -10,8 +10,8 @@ const blogSchema = new mongoose.Schema({
     },
     author: {
         type: String,
-        required: true,
-        minlength: 3
+        // required: true,
+        // minlength: 3
     },
     url: {
         type: String,
@@ -21,7 +21,7 @@ const blogSchema = new mongoose.Schema({
     },
     likes: {
         type: Number,
-        min: 1
+        default: 0
     }
   })
 

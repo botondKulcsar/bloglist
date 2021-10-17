@@ -4,7 +4,8 @@ const Blog = require('../models/blog')
 blogRouter.get('/', async (request, response, next) => {
     try {
         const blogs = await Blog.find({})
-        response.json(blogs)
+        const formattedBlogs = blogs.map(blog => blog.toJSON())
+        response.json(formattedBlogs)
     } catch (error) {
         next(error)
     }
@@ -16,7 +17,7 @@ blogRouter.post('/', async (request, response, next) => {
     try {
        const savedBlog = await blog.save()
        response.status(201)
-       response.json(savedBlog)
+       response.json(savedBlog.toJSON())
     } catch (error) {
         next(error)
     }

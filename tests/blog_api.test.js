@@ -20,6 +20,12 @@ describe('blog API', () => {
 
         expect(response.body).toHaveLength(helper.initialBlogs.length)
     })
+
+    test(`returns the blog list with the unique identifier 'id' instead of the default '_id'`, async () => {
+        const response = await api
+            .get('/api/blogs')
+        expect(response.body[0].id).toBeDefined()
+    })
 })
 
 afterAll(() => {

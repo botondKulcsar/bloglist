@@ -26,6 +26,23 @@ describe('blog API', () => {
             .get('/api/blogs')
         expect(response.body[0].id).toBeDefined()
     })
+
+    test('POST request creates a new blog post', async () => {
+        await api
+            .post('/api/blogs')
+            .send({
+                title: 'New Title',
+                url: 'http://www.exampleTestblog.com'
+            })
+            .expect(201)
+            .expect('Content-Type', /application\/json/)
+        
+        const response = await api
+            .get('/api/blogs')
+
+        expect(response.body.length).toBe(helper.initialBlogs.length + 1)
+        expect(response.body.map(blog => blog.title)).toContain('New Title')
+    })
 })
 
 afterAll(() => {

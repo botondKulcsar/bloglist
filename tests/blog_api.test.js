@@ -36,7 +36,7 @@ describe('blog API', () => {
             })
             .expect(201)
             .expect('Content-Type', /application\/json/)
-        
+
         const response = await api
             .get('/api/blogs')
 
@@ -64,6 +64,43 @@ describe('blog API', () => {
                 url: 'http://www.exampleTestblog.com'
             })
             .expect(400)
+    })
+})
+
+describe('delete', () => {
+    test('works in case of a valid id', async () => {
+        const response = await api
+            .get('/api/blogs')
+
+        const validId = response.body[0].id
+
+        await api
+            .delete(`/api/blogs/${validId}`)
+            .expect(204)
+
+        const result = await api
+            .get('/api/blogs')
+
+        expect(result.body.length).toBe(helper.initialBlogs.length - 1)
+
+        const titles = result.body.map(blog => blog.title)
+        expect(titles).not.toContain('First Blog')
+
+    })
+
+    test('returns status code 404 in case of inexistent id', async () => {
+        
+        const invalidId = await helper.nonExistingId()
+        console.log(invalidId)
+        await api
+            .delete(`/api/blogs/${invalidId}`)
+            .expect(404)
+
+        const result = await api
+            .get('/api/blogs')
+
+        expect(result.body.length).toBe(helper.initialBlogs.length)
+
     })
 })
 

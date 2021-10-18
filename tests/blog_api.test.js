@@ -8,9 +8,34 @@ const Blog = require('../models/blog')
 const User = require('../models/user')
 const bcrypt = require('bcrypt')
 
+let token;
+let userId;
+let userObjectId;
+
 beforeEach(async () => {
     await Blog.deleteMany({})
+    await User.deleteMany({})
     await Blog.insertMany(helper.initialBlogs)
+    const testUser = new User({
+        username: 'testUser',
+        name: 'test user',
+        passwordHash: await bcrypt.hash('test', 10)
+    })
+    const savedUser = await testUser.save()
+    userObjectId = savedUser._id
+    userId = savedUser._id.toString()
+
+
+    const result = await api
+        .post('/api/login')
+        .send({
+            username: 'testUser',
+            password: 'test'
+        })
+        .set('Accept', 'application/json')
+
+    token = result.body.token
+
 })
 
 describe('when there is initially one user in db', () => {
@@ -131,10 +156,10 @@ describe('blog API', () => {
 
         await api
             .post('/api/blogs')
+            .set('Authorization','Bearer ' + token)
             .send({
                 title: 'New Title',
-                url: 'http://www.exampleTestblog.com',
-                userId: savedUser._id.toString()
+                url: 'http://www.exampleTestblog.com'
             })
             .expect(201)
             .expect('Content-Type', /application\/json/)
@@ -146,17 +171,26 @@ describe('blog API', () => {
         expect(response.body.map(blog => blog.title)).toContain('New Title')
     })
 
+    test('creating a blog fails with status code 401 Unauthorized if token is missing', async () => {
+        await api
+            .post('/api/blogs')
+            .set('Authorization','Bearer ')
+            .send({
+                title: 'Old Title',
+                url: 'http://www.ExampleTestblog.com'
+            })
+            .expect(401)
+            .expect('Content-Type', /application\/json/)
+    })
+
     test('if the likes property is missing from the request it will default to 0', async () => {
-        const passwordHash = await bcrypt.hash(helper.initialUsers[1].password, 10)
-        const newUser = new User({ ...helper.initialUsers[1], passwordHash })
-        const savedUser = await newUser.save()
 
         const response = await api
             .post('/api/blogs')
+            .set('Authorization','Bearer ' + token)
             .send({
                 title: 'New Title',
                 url: 'http://www.exampleTestblog.com',
-                userId: savedUser._id.toString()
             })
             .expect(201)
             .expect('Content-Type', /application\/json/)
@@ -167,6 +201,7 @@ describe('blog API', () => {
     test('if the title or url property is missing from the request, api responds with status code 400', async () => {
         await api
             .post('/api/blogs')
+            .set('Authorization','Bearer ' + token)
             .send({
                 url: 'http://www.exampleTestblog.com'
             })
@@ -182,7 +217,13 @@ describe('delete a blog', () => {
         const validId = response.body[0].id
 
         await api
+            .patch(`/api/blogs/${validId}`)
+            .send({ user: userObjectId })
+            .expect(200)
+
+        await api
             .delete(`/api/blogs/${validId}`)
+            .set('Authorization','Bearer ' + token)
             .expect(204)
 
         const result = await api
@@ -201,6 +242,7 @@ describe('delete a blog', () => {
 
         await api
             .delete(`/api/blogs/${invalidId}`)
+            .set('Authorization','Bearer ' + token)
             .expect(404)
 
         const result = await api

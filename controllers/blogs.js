@@ -63,7 +63,7 @@ blogsRouter.post('/', async (request, response, next) => {
     const body = request.body
 
     try {
-        const user = await User.findById(body.userId)
+        const user = await User.findOne()
         if (!user) {
             const error = new Error('no user found')
             error.name = 'ValidationError'

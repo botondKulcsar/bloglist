@@ -1,9 +1,10 @@
-const blogRouter = require('express').Router()
+const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
+const User = require('../models/user')
 
-blogRouter.get('/', async (request, response, next) => {
+blogsRouter.get('/', async (request, response, next) => {
     try {
-        const blogs = await Blog.find({})
+        const blogs = await Blog.find({}).populate('user', { username: 1, name: 1 })
         const formattedBlogs = blogs.map(blog => blog.toJSON())
         response.json(formattedBlogs)
     } catch (error) {
@@ -11,7 +12,7 @@ blogRouter.get('/', async (request, response, next) => {
     }
 })
 
-blogRouter.get('/:id', async (request, response, next) => {
+blogsRouter.get('/:id', async (request, response, next) => {
     try {
         const blog = await Blog.findById(request.params.id)
         if (!blog) {
@@ -26,7 +27,7 @@ blogRouter.get('/:id', async (request, response, next) => {
     }
 })
 
-blogRouter.delete('/:id', async (request, response, next) => {
+blogsRouter.delete('/:id', async (request, response, next) => {
     try {
         const deletedBlog = await Blog.findByIdAndRemove(request.params.id)
         if (!deletedBlog) {
@@ -34,14 +35,14 @@ blogRouter.delete('/:id', async (request, response, next) => {
                 error: `no blog with id=${request.params.id} has been found`
             })
         }
-        
+
         response.status(204).end()
     } catch (error) {
         next(error)
     }
 })
 
-blogRouter.patch('/:id', async (request, response, next) => {
+blogsRouter.patch('/:id', async (request, response, next) => {
     try {
         const blogToUpdate = await Blog.findById(request.params.id)
         if (!blogToUpdate) {
@@ -58,17 +59,33 @@ blogRouter.patch('/:id', async (request, response, next) => {
     }
 })
 
-blogRouter.post('/', async (request, response, next) => {
-    const blog = new Blog(request.body)
+blogsRouter.post('/', async (request, response, next) => {
+    const body = request.body
 
     try {
-       const savedBlog = await blog.save()
-       response.status(201)
-       response.json(savedBlog.toJSON())
+        const user = await User.findById(body.userId)
+        if (!user) {
+            const error = new Error('no user found')
+            error.name = 'ValidationError'
+            throw error
+        }
+        const blog = new Blog({
+            title: body.title,
+            author: body.author,
+            url: body.url,
+            likes: body.likes,
+            user: user._id
+        })
+
+        const savedBlog = await blog.save()
+        user.blogs = [ ...user.blogs, savedBlog._id ]
+        await user.save()
+        response.status(201)
+        response.json(savedBlog.toJSON())
     } catch (error) {
         next(error)
     }
 })
 
 
-module.exports = blogRouter
+module.exports = blogsRouter

@@ -6,7 +6,7 @@ const User = require('../models/user')
 loginRouter.post('/', async (request, response, next) => {
     const { username = '', password = '' } = request.body
     if (!username || !password) {
-        return response.status(401).json({ 
+        return response.status(401).json({
             error: 'username or password cannot be emtpy'
         })
     }
@@ -17,7 +17,7 @@ loginRouter.post('/', async (request, response, next) => {
             : await bcrypt.compare(password, user.passwordHash)
 
         if (!(user && passwordCorrect)) {
-            return response.status(401).json({ 
+            return response.status(401).json({
                 error: 'invalid username or password'
             })
         }
@@ -27,7 +27,12 @@ loginRouter.post('/', async (request, response, next) => {
             id: user._id
         }
 
-        const token = jwt.sign(userForToken, process.env.SECRET)
+        // token expires in 60 * 60 seconds, one hour
+        const token = jwt.sign(
+            userForToken,
+            process.env.SECRET,
+            { expiresIn: 60 * 60 }
+        )
 
         response.status(200)
             .send({
@@ -37,7 +42,7 @@ loginRouter.post('/', async (request, response, next) => {
             })
 
     } catch (error) {
-       next(error) 
+        next(error)
     }
 })
 

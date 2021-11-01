@@ -85,12 +85,14 @@ blogsRouter.post('/', userExtractor, async (request, response, next) => {
             user: user._id
         })
 
-        const savedBlog = await blog.save()
+        let savedBlog = await blog.save()
+        savedBlog = await savedBlog.populate('user', { username: 1, name: 1 })
+        
         user.blogs = [...user.blogs, savedBlog._id]
         await user.save()
-
+        const savedAndFormattedBlog = await savedBlog.toJSON()
         response.status(201)
-        response.json(savedBlog.toJSON())
+        response.json(savedAndFormattedBlog)
     } catch (error) {
         next(error)
     }

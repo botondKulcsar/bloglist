@@ -14,7 +14,7 @@ blogsRouter.get('/', async (request, response, next) => {
 
 blogsRouter.get('/:id', async (request, response, next) => {
     try {
-        const blog = await Blog.findById(request.params.id)
+        const blog = await Blog.findById(request.params.id).populate('user', { username: 1, name: 1 })
         if (!blog) {
             return response.status(404).send({
                 error: `no blog with id=${request.params.id} has been found`
@@ -63,8 +63,9 @@ blogsRouter.patch('/:id', async (request, response, next) => {
         }
 
         const payload = request.body
-        const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, payload, { new: true })
-        response.status(200).json(updatedBlog)
+        const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, payload, { new: true }).populate('user', { username: 1, name: 1 })
+        const updatedAndFormattedBlog = updatedBlog.toJSON()
+        response.status(200).json(updatedAndFormattedBlog)
     } catch (error) {
         next(error)
     }

@@ -1,4 +1,5 @@
 const express = require('express')
+const path = require('path')
 const app = express()
 const config = require('./utils/config')
 const logger = require('./utils/logger')
@@ -6,7 +7,7 @@ const blogsRouter = require('./controllers/blogs')
 const usersRouter = require('./controllers/users')
 const loginRouter = require('./controllers/login')
 const middleware = require('./utils/middleware')
-// const cors = require('cors')
+const staticUrl = path.join(__dirname, './build')
 
 const mongoose = require('mongoose')
 
@@ -18,8 +19,8 @@ mongoose.connect(config.MONGODB_URI)
         process.exit(1)
     })
 
-// app.use(cors())
-app.use(express.static('build'))
+
+
 app.use(express.json())
 app.use(middleware.requestLogger)
 
@@ -32,6 +33,11 @@ if (process.env.NODE_ENV === 'test') {
     app.use('/api/testing', testingRouter)
 }
 
+app.get('*/*', express.static(staticUrl))
+
+app.all('*', (request, response) => {
+    response.status(200).sendFile(`${staticUrl}/index.html`)
+})
 app.use(middleware.unknownEndpoint)
 app.use(middleware.errorHandler)
 

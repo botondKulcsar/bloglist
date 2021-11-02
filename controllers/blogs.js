@@ -87,7 +87,7 @@ blogsRouter.post('/', userExtractor, async (request, response, next) => {
 
         let savedBlog = await blog.save()
         savedBlog = await savedBlog.populate('user', { username: 1, name: 1 })
-        
+
         user.blogs = [...user.blogs, savedBlog._id]
         await user.save()
         const savedAndFormattedBlog = await savedBlog.toJSON()
@@ -98,5 +98,28 @@ blogsRouter.post('/', userExtractor, async (request, response, next) => {
     }
 })
 
+blogsRouter.post('/:id/comments', async (request, response, next) => {
+    const { comment } = request.body
+    if (!comment) {
+        return response.status(400).send({ error: 'Invalid comment'})
+    }
+    try {
+        const blog = await Blog.findById(request.params.id)
+        if (!blog) {
+            return response.status(404).send({
+                error: `no blog with id=${request.params.id} has been found`
+            })
+        }
+        blog.comments.push(comment)
+        let commentedBlog = await blog.save()
+        commentedBlog = await commentedBlog.populate('user', { username: 1, name: 1 })
+
+        response.status(201)
+        response.json(commentedBlog.toJSON())
+    } catch (error) {
+        next(error)
+    }
+
+})
 
 module.exports = blogsRouter

@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt');
 usersRouter.post('/', async (request, response, next) => {
     const body = request.body
     try {
-        if (body.password.length < 3) {
+        if (body?.password.length < 3) {
             const error = new Error('password minlength is 3')
             error.name = 'ValidationError'
             throw error

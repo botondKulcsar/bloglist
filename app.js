@@ -1,6 +1,7 @@
 const express = require('express')
 const path = require('path')
 const app = express()
+const cors = require('cors')
 const config = require('./utils/config')
 const logger = require('./utils/logger')
 const blogsRouter = require('./controllers/blogs')
@@ -21,6 +22,11 @@ mongoose.connect(config.MONGODB_URI)
 
 
 
+const corsOptions = {
+    origin: 'https://kecs-bloglist-ng.web.app'
+}
+
+app.use(cors(corsOptions))
 app.use(express.json())
 app.use(middleware.requestLogger)
 
